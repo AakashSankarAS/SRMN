@@ -12,7 +12,7 @@ import {
 export default function ThankYou() {
   const [sign, setSign] = useState("");
   const handleClick = async () => {
-    fetch("192.168.0.100:4000/embeddedsigning")
+    fetch("http://192.168.0.100:4000/embeddedsigning")
       .then((res) => {
         return res.json();
       })
