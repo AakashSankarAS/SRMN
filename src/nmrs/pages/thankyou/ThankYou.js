@@ -44,16 +44,17 @@ export default function ThankYou() {
               </Button>
             </Col>
           </Row>
-          <iframe
-            src={sign}
-            title="NMRS SURVEY"
-            frameborder="0"
-            style={{ minHeight: "180vh", width: "100%" }}
-            marginwidth="0"
-            marginheight="0"
-            scrolling="auto"
-            allow="geolocation"
-          ></iframe>
+          {sign && (
+            <iframe
+              src={sign}
+              title="NMRS sign"
+              frameborder="0"
+              style={{ minHeight: "100vh", width: "100%" }}
+              marginwidth="0"
+              marginheight="0"
+              allow="geolocation"
+            ></iframe>
+          )}
         </CardBody>
       </Card>
     </Container>
