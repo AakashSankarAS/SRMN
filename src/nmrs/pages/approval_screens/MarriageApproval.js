@@ -41,7 +41,7 @@ export default function MarriageApproval({ id, status, updateStatus }) {
     const formData = new FormData();
     formData.append("file", file);
 
-    fetch("http://192.168.0.104:4000/auth", {
+    fetch("https://zoho-sign-fvn2.onrender.com/auth", {
       method: "POST",
       body: formData,
     })
