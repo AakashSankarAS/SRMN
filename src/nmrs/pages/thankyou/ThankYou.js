@@ -24,8 +24,8 @@ export default function ThankYou() {
     <Container>
       <Card>
         <CardHeader>
-          <h2>Your Form Submitted Successfully</h2>
-          <h4>Share your FeedBack</h4>
+          {/* <h2>Your Form Submitted Successfully</h2>
+          <h4>Share your FeedBack</h4> */}
         </CardHeader>
         <CardBody>
           {/* <iframe
