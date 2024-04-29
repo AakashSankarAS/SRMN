@@ -203,7 +203,7 @@ export default function App() {
           }
         />
         <Route
-          path="/civilmarriage/thankyou"
+          path="/civilmarriage/documentsigning"
           element={
             <MainCard heading="">
               <ThankYou />
