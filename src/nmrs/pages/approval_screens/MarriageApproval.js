@@ -4,20 +4,54 @@ import FileView from "./FileView";
 import { useDataWithId } from "../../hooks/useDataWithId";
 import Swal from "sweetalert2";
 
+import MarriagePdf from "../end_users/civil_marriage/MarriagePdf";
+import { pdf } from "@react-pdf/renderer";
+import PreviewModal from "nmrs/components/modals/PreviewModal";
+
 export default function MarriageApproval({ id, status, updateStatus }) {
   const dbName = "civilmarriage";
 
   const [step, setStep] = useState(1);
   const details = useDataWithId({ dbName, id });
   const [files, setFiles] = useState();
+  const [getLink, setLink] = useState();
 
-  const Approve = () => {
-    Swal.fire({
-      icon: "success",
-      title: "Approved!",
-      text: "Approved Successfully",
-      confirmButtonText: "OK",
+  const [modal, setModal] = useState(false);
+
+  const Approve = async () => {
+    const blob = await pdf(
+      <MarriagePdf
+        doMarriage={details.doMarriage}
+        gName={details.gName}
+        bName={details.bName}
+        placeofMarriage={
+          details.noRegistrarOffice ||
+          details.noChurch ||
+          details.noTemple ||
+          details.noMosque
+        }
+      />
+    )
+      .toBlob()
+      .then((elem) => elem);
+
+    const file = new File([blob], "doc.pdf", {
+      type: blob.type,
     });
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("http://192.168.0.104:4000/auth", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((response) => {
+        setLink(response.url);
+        setModal(true);
+      });
   };
   const onHold = () => {
     Swal.fire({
@@ -95,6 +129,7 @@ export default function MarriageApproval({ id, status, updateStatus }) {
         </Row>
         <Card className="p-3 ">
           <div className="border-3">
+            {/* <embed src={file} width="100%" /> */}
             {step === 1 && (
               <Row>
                 <Col md="6" lg="3">
@@ -401,11 +436,12 @@ export default function MarriageApproval({ id, status, updateStatus }) {
                 onClick={(e) => {
                   e.preventDefault();
                   Approve();
-                  updateStatus("Approved", id);
+                  // updateStatus("Approved", id);
                 }}
               >
-                Approve
+                Sign The Document
               </Button>
+
               {status !== "On Hold" && (
                 <Button
                   size="md"
@@ -433,6 +469,61 @@ export default function MarriageApproval({ id, status, updateStatus }) {
             </Row>
           )}
         </Card>
+        <PreviewModal modal={modal} setModal={setModal}>
+          {getLink && (
+            <>
+              <iframe
+                src={getLink}
+                title="NMRS sign"
+                frameborder="0"
+                style={{ minHeight: "80vh", width: "100%" }}
+                marginwidth="0"
+                marginheight="0"
+                allow="geolocation"
+              ></iframe>
+              {status !== "Rejected" && status !== "Approved" && (
+                <Row className="justify-content-center mt-3">
+                  <Button
+                    size="md"
+                    className="bg-success text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Approved();
+                      updateStatus("Approved", id);
+                    }}
+                  >
+                    Approve()
+                  </Button>
+
+                  {status !== "On Hold" && (
+                    <Button
+                      size="md"
+                      className="bg-warning text-white"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onHold();
+                        updateStatus("On Hold", id);
+                      }}
+                    >
+                      On Hold
+                    </Button>
+                  )}
+                  <Button
+                    size="md"
+                    className="bg-danger text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      Rejected();
+                      updateStatus("Rejected", id);
+                    }}
+                  >
+                    Reject
+                  </Button>
+                </Row>
+              )}
+            </>
+          )}
+        </PreviewModal>
       </Container>
     </>
   );
