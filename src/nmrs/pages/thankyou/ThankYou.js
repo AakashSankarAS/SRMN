@@ -40,7 +40,7 @@ export default function ThankYou() {
           <Row>
             <Col className="text-center">
               <Button onClick={handleClick} className="bg-usrb text-white">
-                Zoho Api Hit
+                Open Document
               </Button>
             </Col>
           </Row>
