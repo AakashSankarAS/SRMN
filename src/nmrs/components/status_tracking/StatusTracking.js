@@ -66,14 +66,12 @@ export default function StatusTracking({ btnText }) {
   }, [data, editedData]);
 
   const downloadDoc = async (reqID) => {
-    alert("hi");
-
     const fetchData = await fetch(
       `https://zoho-sign-fvn2.onrender.com/getdocument?id=${reqID}`
     )
       .then((res) => res.json())
       .then((data) => data.pdf);
-    alert(fetchData);
+
     const downloadLink = document.createElement("a");
 
     downloadLink.href = "data:application/pdf;base64," + fetchData;
