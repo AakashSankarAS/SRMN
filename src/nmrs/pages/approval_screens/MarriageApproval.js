@@ -15,10 +15,11 @@ export default function MarriageApproval({ id, status, updateStatus }) {
   const details = useDataWithId({ dbName, id });
   const [files, setFiles] = useState();
   const [getLink, setLink] = useState();
+  const [reqID, setReqId] = useState();
 
   const [modal, setModal] = useState(false);
 
-  const Approve = async () => {
+  const docSign = async () => {
     const blob = await pdf(
       <MarriagePdf
         doMarriage={details.doMarriage}
@@ -50,8 +51,19 @@ export default function MarriageApproval({ id, status, updateStatus }) {
       })
       .then((response) => {
         setLink(response.url);
+        setReqId(response.req_id);
+        alert(response.req_id);
         setModal(true);
       });
+  };
+
+  const Approve = () => {
+    Swal.fire({
+      icon: "success",
+      title: "Approved",
+      text: "Application Is Approved",
+      confirmButtonText: "OK",
+    }).then(() => setModal(false));
   };
   const onHold = () => {
     Swal.fire({
@@ -435,7 +447,7 @@ export default function MarriageApproval({ id, status, updateStatus }) {
                 className="bg-success text-white"
                 onClick={(e) => {
                   e.preventDefault();
-                  Approve();
+                  docSign();
                   // updateStatus("Approved", id);
                 }}
               >
@@ -488,11 +500,12 @@ export default function MarriageApproval({ id, status, updateStatus }) {
                     className="bg-success text-white"
                     onClick={(e) => {
                       e.preventDefault();
-                      // Approved();
-                      updateStatus("Approved", id);
+                      Approve();
+
+                      updateStatus("Approved", id, reqID);
                     }}
                   >
-                    Approve()
+                    Approve
                   </Button>
 
                   {status !== "On Hold" && (

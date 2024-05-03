@@ -76,7 +76,7 @@ export default function MarriagePdf({
         <View style={styles.section}>
           <Text>
             officially by{" "}
-            <Text style={{ textDecoration: "underline" }}>{celebrant}</Text>{" "}
+            {/* <Text style={{ textDecoration: "underline" }}>{celebrant}</Text>{" "} */}
           </Text>
         </View>
       </Page>

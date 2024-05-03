@@ -6,7 +6,15 @@ import "sweetalert2/dist/sweetalert2.css";
 import { useGetAll } from "../../hooks/useGetAll";
 import { useEditWithId } from "../../hooks/useEditWithId";
 import { useDeleteWithId } from "../../hooks/useDeleteWithId";
-import { Card, CardHeader, Container, Table, Row } from "reactstrap";
+import {
+  Card,
+  CardHeader,
+  Container,
+  Table,
+  Row,
+  Button,
+  Input,
+} from "reactstrap";
 import PreviewModal from "../modals/PreviewModal";
 import CivilMarriageEdit from "../../pages/end_users/civil_marriage/CivilMarriageEdit";
 import SingleStatusEdit from "../../pages/end_users/single_status_letter/SingleStatusEdit";
@@ -25,6 +33,11 @@ import LicenseRenewalEdit from "nmrs/pages/church_admin/license_renewal/LicenseR
 import LicenseRenewalView from "nmrs/pages/church_admin/license_renewal/LicenseRenewalView";
 import LicenseRenewalPDF from "nmrs/pages/church_admin/license_renewal/LicenseRenewalPDF";
 
+import usrb from "../../themes/Logo.png";
+import TextInput from "components/Forms/TextInput";
+import MiniModal from "../modals/MiniModal";
+import { toast } from "react-toastify";
+
 export default function StatusTracking({ btnText }) {
   const [mouse, handleMouse] = useState("0");
   const location = useLocation();
@@ -35,9 +48,15 @@ export default function StatusTracking({ btnText }) {
   const [modal, setModal] = useState("");
   const [editedData, editWithKey] = useEditWithId({ dbName });
   const deleteWithKey = useDeleteWithId({ dbName });
+  const [OTP, setOTP] = useState({
+    visible: "",
+    otp: "",
+  });
 
+  const [OTPNumber, setOTPNumber] = useState();
   const [status, setStatus] = useState([]);
 
+  const [getDocument, setDocument] = useState();
   useEffect(() => {
     if (editedData) {
       setStatus(editedData);
@@ -45,6 +64,62 @@ export default function StatusTracking({ btnText }) {
       setStatus(data);
     }
   }, [data, editedData]);
+
+  const downloadDoc = async (reqID) => {
+    alert("hi");
+
+    const fetchData = await fetch(
+      `https://zoho-sign-fvn2.onrender.com/getdocument?id=${reqID}`
+    )
+      .then((res) => res.json())
+      .then((data) => data.pdf);
+    alert(fetchData);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = "data:application/pdf;base64," + fetchData;
+
+    downloadLink.download = "MarriageCertificate.pdf";
+
+    downloadLink.click();
+  };
+
+  const verification = async () => {
+    let newOTP = Math.floor(Math.random() * 1000000);
+    setOTPNumber(newOTP);
+
+    const options = {
+      method: "POST",
+      body: new URLSearchParams({
+        to: "aakashsankar412@gmail.com",
+        subject: "One Time Password Verification",
+        html: `
+        <html>
+  <head>
+    <style>
+      .otp {
+       text-align:center;
+      }
+      .inner{
+        border-radius:10px;
+        border:2px solid black;
+        padding:4px;
+        margin-top:5px;
+      }
+    </style>
+  </head>
+  <body>
+  <div class="otp"><img title="logo" src=${"https://ursb.go.ug/assets/images/ug/Logo_Colour-01.jpg"} alt="ursb" width="30%" /></div>
+  <h4 class="otp">This is the OTP to view and download your marriage certificate</h4>
+   <h3 class="otp"><span class="inner">${newOTP}<span></h3>
+  </body>
+</html>`,
+      }),
+    };
+    const verify = await fetch(
+      `https://zoho-sign-fvn2.onrender.com/sendmail`,
+      options
+    );
+  };
 
   const handleDelete = (id) => {
     const newData = status.filter((elem) => elem.id !== id);
@@ -331,139 +406,241 @@ export default function StatusTracking({ btnText }) {
                                 className="px-3 border-0 rounded-pill bg-usrb shadow-lg ml-1 py-1"
                                 onMouseEnter={() => handleMouse(`${elem.id}4`)}
                                 onMouseLeave={() => handleMouse("0")}
-                                onClick={() => setModal(`${elem.id}4`)}
+                                onClick={() => setModal(`${elem.id}42`)}
                               >
                                 <i className="fa-solid text-white  fa-file"></i>
                                 <div
                                   className={
-                                    mouse === `${elem.id}4`
+                                    mouse === `${elem.id}41`
                                       ? "tooltip tooltip-inner show"
                                       : "tooltip "
                                   }
                                 >
                                   document view
-                                  <DocumentPreview
-                                    modal={modal === `${elem.id}4` && true}
-                                    setModal={setModal}
-                                  >
-                                    {routeName ===
-                                      "lostcertificateretrieval" && (
-                                      <embed
-                                        src={URL.createObjectURL(
-                                          elem.certificate
-                                        )}
-                                        className="w-100 h-100"
+                                </div>
+                                <DocumentPreview
+                                  modal={modal === `${elem.id}41` && true}
+                                  setModal={setModal}
+                                >
+                                  {routeName === "lostcertificateretrieval" && (
+                                    <embed
+                                      src={URL.createObjectURL(
+                                        elem.certificate
+                                      )}
+                                      className="w-100 h-100"
+                                    />
+                                  )}
+
+                                  {routeName === "civilmarriage" && (
+                                    <embed
+                                      src={
+                                        "data:application/pdf;base64," +
+                                        getDocument
+                                      }
+                                      className="w-100 h-100"
+                                    />
+                                  )}
+                                </DocumentPreview>
+                                <MiniModal
+                                  modal={modal === `${elem.id}42` && true}
+                                  setModal={setModal}
+                                  setOTP={setOTP}
+                                >
+                                  <Row className="justify-content-center ">
+                                    {OTP.visible && (
+                                      <TextInput
+                                        id="otp"
+                                        labelText="Enter Your OTP"
+                                        value={OTP.otp}
+                                        onChange={(e) =>
+                                          setOTP({
+                                            ...OTP,
+                                            otp: e.target.value,
+                                          })
+                                        }
                                       />
                                     )}
-                                    <PDFViewer style={{ width: "100%" }}>
-                                      {routeName === "civilmarriage" && (
-                                        <MarriagePdf
-                                          doMarriage={elem.doMarriage}
-                                          gName={elem.gName}
-                                          bName={elem.bName}
-                                          placeofMarriage={
-                                            elem.noRegistrarOffice ||
-                                            elem.noChurch ||
-                                            elem.noTemple ||
-                                            elem.noMosque
+                                  </Row>
+                                  <Row className="justify-content-center align-items-center">
+                                    {!OTP.visible ? (
+                                      <Button
+                                        className="px-3 border-0 rounded text-white  bg-usrb shadow-lg ml-1 py-1"
+                                        onClick={() => {
+                                          verification();
+                                          setOTP((elem) => {
+                                            return {
+                                              ...elem,
+                                              visible: true,
+                                            };
+                                          });
+                                        }}
+                                      >
+                                        Recieve OTP
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        className="px-3 border-0 rounded text-white  bg-usrb shadow-lg ml-1 py-1"
+                                        onClick={() => {
+                                          if (!OTP.otp) {
+                                            toast.error(
+                                              `Please Enter Your OTP`,
+                                              {
+                                                theme: "colored",
+                                                toastId: "error-toast",
+                                              }
+                                            );
+                                          } else if (
+                                            Number(OTP.otp) !== OTPNumber
+                                          ) {
+                                            toast.error(`Invalid OTP`, {
+                                              theme: "colored",
+                                              toastId: "error-toast",
+                                            });
+                                          } else {
+                                            const docView = async () => {
+                                              const fetchData = await fetch(
+                                                `https://zoho-sign-fvn2.onrender.com/getdocument?id=${elem.reqID}`
+                                              )
+                                                .then((res) => res.json())
+                                                .then((data) => data.pdf);
+                                              setDocument(fetchData);
+                                              setModal(`${elem.id}41`);
+                                              setOTP({
+                                                otp: "",
+                                                visible: "",
+                                              });
+                                            };
+                                            docView();
                                           }
-                                        />
-                                      )}
-                                      {routeName === "churchlicensing" && (
-                                        <LicensePDF
-                                          name={elem.cOfficialName}
-                                          church={elem.cName}
-                                          county={elem.county}
-                                          district={elem.district}
-                                          doA={elem?.doA}
-                                        />
-                                      )}
-                                      {routeName === "singlestatusletter" && (
-                                        <SingleStausCertificate
-                                          doA={elem.doA}
-                                          aName={elem.aName}
-                                          // bName={elem.bName}
-                                          // placeofMarriage={
-                                          //   elem.noRegistrarOffice ||
-                                          //   elem.noChurch ||
-                                          //   elem.noTemple ||
-                                          //   elem.noMosque
-                                          // }
-                                        />
-                                      )}
-                                      {routeName === "LicenseRenewal" && (
-                                        <LicenseRenewalPDF
-                                          aName={elem.aName}
-                                          church={elem.cName}
-                                          county={elem.county}
-                                          district={elem.district}
-                                          doA={elem?.doA}
-                                        />
-                                      )}
-                                    </PDFViewer>
-                                    )
-                                  </DocumentPreview>
-                                </div>
+                                        }}
+                                      >
+                                        Verify
+                                      </Button>
+                                    )}
+                                  </Row>
+                                  <Row>
+                                    {!OTP.visible ? (
+                                      <p className="font-weight-bold text-red mt-1">
+                                        Note: The OTP will be sent to your
+                                        email.
+                                      </p>
+                                    ) : (
+                                      <p className="font-weight-bold text-red mt-1">
+                                        Note : Check Your Mail For OTP.
+                                      </p>
+                                    )}
+                                  </Row>
+                                </MiniModal>
                               </button>
 
                               {routeName !== "lostcertificateretrieval" ? (
-                                <PDFDownloadLink
-                                  document={
-                                    (routeName === "civilmarriage" && (
-                                      <MarriagePdf
-                                        doMarriage={elem.doMarriage}
-                                        gName={elem.gName}
-                                        bName={elem.bName}
-                                        placeofMarriage={
-                                          elem.noRegistrarOffice ||
-                                          elem.noChurch ||
-                                          elem.noTemple ||
-                                          elem.noMosque
+                                routeName === "civilmarriage" && (
+                                  <>
+                                    <Button
+                                      className="px-3 border-0 rounded-pill bg-usrb shadow-lg ml-1 py-1"
+                                      onMouseEnter={() =>
+                                        handleMouse(`${elem.id}1`)
+                                      }
+                                      onMouseLeave={() => handleMouse("0")}
+                                      onClick={() => {
+                                        setModal(`${elem.id}5`);
+                                      }}
+                                    >
+                                      <i className="fa-solid m-0 text-white fa-floppy-disk"></i>
+                                      <div
+                                        className={
+                                          mouse === `${elem.id}1`
+                                            ? "tooltip tooltip-inner show"
+                                            : "tooltip "
                                         }
-                                      />
-                                    )) ||
-                                    (routeName === "churchlicensing" && (
-                                      <LicensePDF
-                                        name={elem.cOfficialName}
-                                        church={elem.cName}
-                                        county={elem.county}
-                                        district={elem.district}
-                                        doA={elem?.doA}
-                                      />
-                                    )) ||
-                                    (routeName === "singlestatusletter" && (
-                                      <SingleStausCertificate
-                                        doA={elem.doA}
-                                        aName={elem.aName}
-                                      />
-                                    )) ||
-                                    (routeName === "LicenseRenewal" && (
-                                      <LicenseRenewalPDF
-                                        aName={elem.aName}
-                                        church={elem.cName}
-                                        county={elem.county}
-                                        district={elem.district}
-                                        doA={elem?.doA}
-                                      />
-                                    ))
-                                  }
-                                  className="px-3 border-0 rounded-pill bg-usrb shadow-lg ml-1 py-1"
-                                  onMouseEnter={() =>
-                                    handleMouse(`${elem.id}5`)
-                                  }
-                                  onMouseLeave={() => handleMouse("0")}
-                                >
-                                  <i className="fa-solid  text-white fa-floppy-disk"></i>
-                                  <div
-                                    className={
-                                      mouse === `${elem.id}5`
-                                        ? "tooltip tooltip-inner show"
-                                        : "tooltip "
-                                    }
-                                  >
-                                    download
-                                  </div>
-                                </PDFDownloadLink>
+                                      >
+                                        download
+                                      </div>
+                                    </Button>
+                                    <MiniModal
+                                      modal={modal === `${elem.id}5` && true}
+                                      setModal={setModal}
+                                      setOTP={setOTP}
+                                    >
+                                      <Row className="justify-content-center ">
+                                        {OTP.visible && (
+                                          <TextInput
+                                            id="otp"
+                                            labelText="Enter Your OTP"
+                                            value={OTP.otp}
+                                            onChange={(e) =>
+                                              setOTP({
+                                                ...OTP,
+                                                otp: e.target.value,
+                                              })
+                                            }
+                                          />
+                                        )}
+                                      </Row>
+                                      <Row className="justify-content-center align-items-center">
+                                        {!OTP.visible ? (
+                                          <Button
+                                            className="px-3 border-0 rounded text-white  bg-usrb shadow-lg ml-1 py-1"
+                                            onClick={() => {
+                                              verification();
+                                              setOTP((elem) => {
+                                                return {
+                                                  ...elem,
+                                                  visible: true,
+                                                };
+                                              });
+                                            }}
+                                          >
+                                            Recieve OTP
+                                          </Button>
+                                        ) : (
+                                          <Button
+                                            className="px-3 border-0 rounded text-white  bg-usrb shadow-lg ml-1 py-1"
+                                            onClick={() => {
+                                              if (!OTP.otp) {
+                                                toast.error(
+                                                  `Please Enter Your OTP`,
+                                                  {
+                                                    theme: "colored",
+                                                    toastId: "error-toast",
+                                                  }
+                                                );
+                                              } else if (
+                                                Number(OTP.otp) !== OTPNumber
+                                              ) {
+                                                toast.error(`Invalid OTP`, {
+                                                  theme: "colored",
+                                                  toastId: "error-toast",
+                                                });
+                                              } else {
+                                                downloadDoc(elem.reqID);
+                                                setModal(0);
+                                                setOTP({
+                                                  otp: "",
+                                                  visible: "",
+                                                });
+                                              }
+                                            }}
+                                          >
+                                            Verify
+                                          </Button>
+                                        )}
+                                      </Row>
+                                      <Row>
+                                        {!OTP.visible ? (
+                                          <p className="font-weight-bold text-red mt-1">
+                                            Note: The OTP will be sent to your
+                                            email.
+                                          </p>
+                                        ) : (
+                                          <p className="font-weight-bold text-red mt-1">
+                                            Note : Check Your Mail For OTP.
+                                          </p>
+                                        )}
+                                      </Row>
+                                    </MiniModal>
+                                  </>
+                                )
                               ) : (
                                 <FileDownloader
                                   className="d-inline px-3 border-0 rounded-pill bg-usrb shadow-lg ml-1 py-1"

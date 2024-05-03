@@ -2,7 +2,7 @@ import { useState } from "react";
 
 export const useUpdateStatus = ({ dbName }) => {
   const [data, setData] = useState("");
-  function updateStatus(message, id, certificate = "") {
+  function updateStatus(message, id, reqID = 0, certificate = "") {
     var request = indexedDB.open(dbName, 1);
     request.onsuccess = function (event) {
       var db = event.target.result;
@@ -14,7 +14,12 @@ export const useUpdateStatus = ({ dbName }) => {
 
         getRequest.onsuccess = function (event) {
           var record = event.target.result;
-          record = { ...record, status: message, certificate: certificate };
+          record = {
+            ...record,
+            status: message,
+            certificate: certificate,
+            reqID: reqID,
+          };
 
           var updateDone = objectStore.put(record);
           updateDone.onsuccess = (event) => {
