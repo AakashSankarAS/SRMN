@@ -6,15 +6,7 @@ import "sweetalert2/dist/sweetalert2.css";
 import { useGetAll } from "../../hooks/useGetAll";
 import { useEditWithId } from "../../hooks/useEditWithId";
 import { useDeleteWithId } from "../../hooks/useDeleteWithId";
-import {
-  Card,
-  CardHeader,
-  Container,
-  Table,
-  Row,
-  Button,
-  Input,
-} from "reactstrap";
+import { Card, CardHeader, Container, Table, Row, Button } from "reactstrap";
 import PreviewModal from "../modals/PreviewModal";
 import CivilMarriageEdit from "../../pages/end_users/civil_marriage/CivilMarriageEdit";
 import SingleStatusEdit from "../../pages/end_users/single_status_letter/SingleStatusEdit";
